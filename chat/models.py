@@ -1,50 +1,83 @@
+
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 from phonenumber_field.modelfields import PhoneNumberField
+from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.conf import settings
+from django.core.exceptions import ValidationError
 
 
-class CustomUser(AbstractUser):
-    
-    User_Type_Choices = [
-        ("advertise", "Advertise"),
-        ("influencer", "Influencer"),
-    ]
-    user_choice = models.CharField(choices=User_Type_Choices, default="influencer", max_length=200)
-    date_of_birth = models.DateTimeField(null=True, blank=True)
-    phone = PhoneNumberField(null=True, blank=True)
-    bio = models.TextField(blank=True)
-    image = models.ImageField(upload_to="images/", null=True)
-    
-    
-    # Add related_name to avoid conflicts
-    groups = models.ManyToManyField(
-        "auth.Group",
-        related_name="customuser_set",
-        blank=True
-    )
-    
-    user_permissions = models.ManyToManyField(
-        "auth.Permission",
-        related_name="customuser_set",
-        blank=True
-    )
-    
+class User(AbstractUser):
+    first_name = models.CharField(max_length=200)
+    last_name = models.CharField(max_length=200)
+    email = models.EmailField(unique=True)
+    phone = PhoneNumberField(null=True)
+    is_influencer  = models.BooleanField(default=False)
+    is_advertiser = models.BooleanField(default=False, null=False)
 
 class Influencer(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="influencer")
-    description = models.TextField(blank=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='influencer')
+    description = models.TextField(blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
     followers = models.PositiveIntegerField(default=0)
-    rate = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    following = models.PositiveIntegerField(default=0)
+
+
+class Advertiser(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='advertiser')
+    description = models.TextField(blank=True, null=True)
+    website = models.URLField(blank=True)
+    followers = models.PositiveIntegerField(default=0)
+    following = models.PositiveIntegerField(default=0)
+    website = models.URLField(blank=True, null=True)
+    #company
+
+class Rate(models.Model):
+    Influencer = models.ForeignKey(Influencer, on_delete=models.CASCADE, related_name='rates')
+    rate = models.DecimalField(max_digits=5, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class ChatRoom(models.Model):
+    name = models.CharField(max_length=250)
+    members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='chat_rooms')
+    created_at = models.DateTimeField(auto_now_add=True)
+    # is_private = models.BooleanField(default=False)
+    # is_group = models.BooleanField(default=False)
+
+class Message(models.Model):
+    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name='sender')
+    time_stamp = models.DateTimeField(auto_now_add=True)
+    message = models.TextField()
+    image = models.ImageField(upload_to='chat/images/', blank=True, null=True)
+    is_read = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.sender.username + ' ' + self.message if self.sender else 'Unknown User'
+    
+    def clean(self):
+        if not self.message and not self.image:
+            raise ValidationError('Message or image is required')
+        
+     # Validation: The full_clean method ensures that the instance is valid before saving it to the database.   
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+       
+
+
+    
+
+  
+    
+  
+    
+
+
 
  
-class Advertise(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="advertise")
-    company = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
-    website = models.URLField(blank=True)
-    phone = PhoneNumberField(null=True, blank=True)
-    influencers = models.ManyToManyField(Influencer, related_name="advertise")
-   
-    
-    def __str__(self):
-        return self.company
+
+

@@ -62,7 +62,7 @@ ROOT_URLCONF = 'influencermeeting.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates\chat'],
+        'DIRS': [BASE_DIR / 'templates\\chat'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -85,7 +85,7 @@ with open(os.path.join(BASE_DIR, 'config.json')) as config_file:
 DATABASES = {
     'default': {
        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Influencer',
+        'NAME': 'influencer',
         'USER': 'postgres',
         'PASSWORD': config['DATABASE_PASSWORD'], 
         'HOST': 'localhost',
@@ -144,4 +144,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
-AUTH_USER_MODEL = 'chat.CustomUser'
+AUTH_USER_MODEL = 'chat.User'
