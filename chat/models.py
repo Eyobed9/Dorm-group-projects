@@ -23,9 +23,11 @@ class Influencer(models.Model):
 
 
 class Advertiser(models.Model):
+    
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='advertiser')
     description = models.TextField(blank=True, null=True)
     website = models.URLField(blank=True)
+    bio = models.TextField(blank=True, null=True)
     followers = models.PositiveIntegerField(default=0)
     following = models.PositiveIntegerField(default=0)
     website = models.URLField(blank=True, null=True)

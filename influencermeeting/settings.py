@@ -29,6 +29,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
+    'daphne', 
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -75,7 +76,17 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'influencermeeting.wsgi.application'
+# WSGI_APPLICATION = 'influencermeeting.wsgi.application'
+# ASGI application
+ASGI_APPLICATION = 'influencermeeting.asgi.application'
+
+
+# Channel Layers (Use Redis for production)
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
@@ -145,3 +156,22 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 AUTH_USER_MODEL = 'chat.User'
+
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {'min_length': 6},  # Reduce minimum length
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+
